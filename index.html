@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="sr">
 <head>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Bitka za gradove</title>
@@ -97,6 +98,7 @@ text.dlabel{font-family:'IBM Plex Sans',sans-serif;font-weight:600;fill:#fff;tex
   <button class="pick-btn" data-side="students">Glasam: Studentska lista</button>
   <button class="pick-btn" data-side="sns">Glasam: SNS lista</button>
 </div>
+<div class="cf-turnstile" style="margin:10px 0" data-sitekey="0x4AAAAAAFEzGmwcU5jZHNqO" data-callback="onTurnstileOk" data-expired-callback="onTurnstileExpired" data-error-callback="onTurnstileExpired"></div>
 <p class="hint" id="hint"></p>
 
 <div class="national">
@@ -367,8 +369,12 @@ function sendVote(id, payload){
     writeQueue.push([id, payload]);
   }
 }
+let turnstileOk=false;
+window.onTurnstileOk=function(){ turnstileOk=true; const h=document.getElementById('hint'); if(h.textContent.includes('robot')) h.textContent=''; };
+window.onTurnstileExpired=function(){ turnstileOk=false; };
 function vote(id){
   if(!selected){ const h=document.getElementById('hint'); h.textContent='Prvo izaberi stranu za koju glasaš.'; h.scrollIntoView({block:'center',behavior:'smooth'}); return; }
+  if(!turnstileOk){ const h=document.getElementById('hint'); h.textContent='Prvo potvrdi da nisi robot (kvadratić iznad).'; h.scrollIntoView({block:'center',behavior:'smooth'}); return; }
   if(pending.has(id)) return;
   const v=state[id]||{votesA:0,votesB:0};
   const next={votesA:v.votesA+(selected==='students'?1:0), votesB:v.votesB+(selected==='sns'?1:0)};
