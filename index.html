@@ -98,7 +98,6 @@ text.dlabel{font-family:'IBM Plex Sans',sans-serif;font-weight:600;fill:#fff;tex
   <button class="pick-btn" data-side="students">Glasam: Studentska lista</button>
   <button class="pick-btn" data-side="sns">Glasam: SNS lista</button>
 </div>
-<div class="cf-turnstile" style="margin:10px 0" data-sitekey="0x4AAAAAAFEzGmwcU5jZHNqO" data-callback="onTurnstileOk" data-expired-callback="onTurnstileExpired" data-error-callback="onTurnstileExpired"></div>
 <p class="hint" id="hint"></p>
 
 <div class="national">
@@ -123,6 +122,9 @@ text.dlabel{font-family:'IBM Plex Sans',sans-serif;font-weight:600;fill:#fff;tex
 </section>
 
 <footer id="foot">Podaci se dele uživo sa svim posetiocima ove stranice. Lista gradova i mapa koriste iste glasove. Granice okruga su uprošćene za prikaz. Broj stanovnika je orijentacion.</footer>
+<div id="turnstileWrap" style="margin-top:14px">
+  <div class="cf-turnstile" data-sitekey="0x4AAAAAAFEzGmwcU5jZHNqO" data-callback="onTurnstileOk" data-expired-callback="onTurnstileExpired" data-error-callback="onTurnstileExpired"></div>
+</div>
 </div>
 
 <script type="module">
@@ -370,11 +372,15 @@ function sendVote(id, payload){
   }
 }
 let turnstileOk=false;
-window.onTurnstileOk=function(){ turnstileOk=true; const h=document.getElementById('hint'); if(h.textContent.includes('robot')) h.textContent=''; };
+window.onTurnstileOk=function(){
+  turnstileOk=true;
+  const h=document.getElementById('hint'); if(h.textContent.includes('robot')) h.textContent='';
+  const w=document.getElementById('turnstileWrap'); if(w) w.style.display='none';
+};
 window.onTurnstileExpired=function(){ turnstileOk=false; };
 function vote(id){
   if(!selected){ const h=document.getElementById('hint'); h.textContent='Prvo izaberi stranu za koju glasaš.'; h.scrollIntoView({block:'center',behavior:'smooth'}); return; }
-  if(!turnstileOk){ const h=document.getElementById('hint'); h.textContent='Prvo potvrdi da nisi robot (kvadratić iznad).'; h.scrollIntoView({block:'center',behavior:'smooth'}); return; }
+  if(!turnstileOk){ const h=document.getElementById('hint'); h.textContent='Prvo potvrdi da nisi robot (kvadratić skroz na dnu stranice).'; document.getElementById('turnstileWrap').scrollIntoView({block:'center',behavior:'smooth'}); return; }
   if(pending.has(id)) return;
   const v=state[id]||{votesA:0,votesB:0};
   const next={votesA:v.votesA+(selected==='students'?1:0), votesB:v.votesB+(selected==='sns'?1:0)};
